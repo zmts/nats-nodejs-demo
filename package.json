@@ -1,0 +1,23 @@
+{
+  "name": "nats-nodejs-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zmts/nats-nodejs-demo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zmts/nats-nodejs-demo/issues"
+  },
+  "homepage": "https://github.com/zmts/nats-nodejs-demo#readme",
+  "dependencies": {
+    "nats": "^1.4.8",
+    "uuid": "^7.0.3"
+  }
+}
