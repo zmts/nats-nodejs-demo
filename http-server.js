@@ -1,35 +1,50 @@
+const express = require('express')
 const { NatsAgent } = require('./nats-agent')
+natsAgent = new NatsAgent({ servers: ['0.0.0.0:4222'] })
 
-class HttpServer {
-  constructor() {
-    this.natsAgent = new NatsAgent({ servers: ['0.0.0.0:4222'] })
-    console.log(`${this.constructor.name} initialized...`)
+const port = 9000
+const host = 'localhost'
+
+const app = express()
+app.use(express.json())
+app.get('/', rootAction)
+app.get('/users', listUsersAction)
+app.post('/users', createUsersAction)
+app.listen(port, host)
+console.log(`HttpServer listened at ${host}:${port}`)
+
+
+function rootAction  (req, res) {
+  res.json({ message: 'Hello World' })
+}
+
+async function listUsersAction (req, res) {
+  const payload = {
+    __params: {}
   }
 
-  createUser (payload) {
-    return this.natsAgent.request('USERS.create', payload)
+  try {
+    const result = await natsAgent.request('USERS.list', payload)
+    res.json(result)
+  } catch (e) {
+    res.status(e.status || 500).json(e)
   }
 }
 
-(async () => {
-  const server = new HttpServer({ gatewayName: 'http-gateway' })
+async function createUsersAction (req, res) {
+  const { body } = req
+
+  const payload = {
+    __params: {},
+    body
+  }
 
   try {
-    const payload1 = {
-      __params: {},
-      body: { name: 'Alex' }
-    }
-    const user1 = await server.createUser(payload1)
-    console.log('Gateway take response with new user1', user1)
-
-
-    const payload2 = {
-      __params: {},
-      body: { name: 'Mary' }
-    }
-    const user2 = await server.createUser(payload2)
-    console.log('Gateway take response with new user2', user2)
+    const result = await natsAgent.request('USERS.create', payload)
+    res.json(result)
   } catch (e) {
-    console.log('error', e)
+    res.status(e.status || 500).json(e)
   }
-})()
+}
+
+

@@ -35,7 +35,12 @@ class NatsAgent {
   subscribe (subject, cb) {
     return new Promise((resolve, reject) => {
       this.agent.subscribe(subject, (payload, replyId, subject, sid) => {
-        cb({ payload, replyId, subject, sid })
+        if (sid) {
+          cb({ payload, replyId, subject, sid })
+          resolve()
+        } else {
+          reject(new Error(`${subject}: subscription failed`))
+        }
       })
     })
   }

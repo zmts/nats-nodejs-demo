@@ -5,35 +5,57 @@ class UnitServer {
   constructor() {
     this.natsAgent = new NatsAgent({ servers: ['0.0.0.0:4222'] })
     console.log(`${this.constructor.name} initialized...`)
+
+    this.createUserAction()
+    this.listUserAction()
   }
 
   async createUserAction () {
     await this.natsAgent.subscribe('USERS.create', async ({ payload, replyId, subject, sid }) => {
-      console.log('createUserAction payload', payload)
+      console.log(subject, payload)
 
-      if (replyId) {
-        const data = {
-          success: true,
-          data: {
-            userId: uuidv4(),
-            createdAt: new Date().getTime(),
-            ...payload.body
-          }
+      const data = {
+        success: true,
+        data: {
+          userId: uuidv4(),
+          createdAt: new Date(),
+          ...payload.body
         }
-        await this.natsAgent.publish(replyId, data)
       }
+
+      // error case
+      const error = {
+        success: false,
+        message: 'Some error occurred',
+        status: 400,
+        code: 'VALIDATION_ERROR'
+      }
+
+      await this.natsAgent.publish(replyId, data)
+    })
+  }
+
+  async listUserAction () {
+    await this.natsAgent.subscribe('USERS.list', async ({ payload, replyId, subject, sid }) => {
+      console.log(subject, payload)
+
+      const data = {
+        success: true,
+        data: [
+          {
+            userId: uuidv4(),
+            createdAt: new Date()
+          },
+          {
+            userId: uuidv4(),
+            createdAt: new Date()
+          },
+        ]
+      }
+
+      await this.natsAgent.publish(replyId, data)
     })
   }
 }
 
-
-
-(async () => {
-  const unit = new UnitServer()
-
-  try {
-    await unit.createUserAction()
-  } catch (e) {
-    console.log('error', e)
-  }
-})()
+new UnitServer()
